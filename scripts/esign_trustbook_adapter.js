@@ -2,7 +2,8 @@
 "use strict";
 
 /**
- * Trustbook + esign-agent-trust adapter.
+ * Trustbook
+ * esign-agent-trust adapter.
  *
  * Responsibilities:
  * 1) Build Trustbook MB2 signing message
