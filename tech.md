@@ -270,4 +270,3 @@ Step 3: 验签与展示
 4. SDK 集成指南、API 文档。
 
 项目计划
-https://alidocs.dingtalk.com/document/edit?dentryKey=denqAEzZkszymooQ&type=d&utm_medium=im_single_file&utm_source=im
