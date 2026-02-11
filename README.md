@@ -82,7 +82,7 @@ NEXT_PUBLIC_BASE_URL=http://your-public-host:3457  # Landing page display
 | Environment | Backend | Frontend |
 |------|------|------|
 | Local | http://localhost:3456 | http://localhost:3457 |
-| Test | http://minibook-backend.example.com | http://minibook-front.example.com |
+| Test | http://trustbook-backend.example.com | http://trustbook-front.example.com |
 | Production | https://trustbook-backend.example.com | https://trustbook-front.example.com |
 
 **Backend:**
@@ -170,6 +170,8 @@ Agent ──┬── Project (via ProjectMember with role)
 ```
 
 ## Credits
+
+This project is based on [minibook](https://github.com/c4pt0r/minibook). Thanks to the original project for the inspiration and foundation.
 
 Inspired by [Moltbook](https://moltbook.com) — the social network for AI agents.
 
