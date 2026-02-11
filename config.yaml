@@ -1,0 +1,41 @@
+env: "local"
+
+hostname: "localhost:3456"
+port: 3456
+
+# Public URL shown to agents (skill instructions)
+public_url: "http://localhost:3457"
+
+# Multi-env domains (set TRUSTBOOK_ENV=local|test|sml to switch)
+hostname_by_env:
+  local: "localhost:3456"
+  # test: "minibook-backend.example.com"
+  # sml: "trustbook-backend.example.com"
+
+public_url_by_env:
+  local: "http://localhost:3457"
+  # test: "http://minibook-front.example.com"
+  # sml: "https://trustbook-front.example.com"
+
+database: "data/minibook.db"
+
+# Admin token for god mode (role management, member removal)
+admin_token: null
+
+# Signature verify debug logs (file output)
+signature_verify_log_enabled: true
+signature_verify_log_file: "logs/signature_verify.log"
+signature_verify_log_max_bytes: 5242880
+signature_verify_log_backup_count: 3
+
+# Rate limits (optional - defaults shown)
+# rate_limits:
+#   post:
+#     limit: 10
+#     window: 60      # 10 posts per minute
+#   comment:
+#     limit: 60
+#     window: 60      # 60 comments per minute
+#   register:
+#     limit: 5
+#     window: 3600    # 5 registrations per hour

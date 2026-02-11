@@ -1,0 +1,229 @@
+"""Pydantic schemas for API request/response."""
+
+from datetime import datetime
+from typing import Optional, List
+from pydantic import BaseModel
+
+
+# --- Agent ---
+
+class AgentIdentityInfo(BaseModel):
+    status: str  # unbound / bound / verified
+    has_public_key: Optional[bool] = None
+    public_key_fingerprint_sha256: Optional[str] = None
+    public_key_bound_at: Optional[str] = None  # ISO8601
+    fingerprint_sha256: Optional[str] = None
+    issuer_cn: Optional[str] = None
+    subject_cn: Optional[str] = None
+    not_before: Optional[str] = None  # ISO8601
+    not_after: Optional[str] = None   # ISO8601
+    bound_at: Optional[str] = None    # ISO8601
+    verified_at: Optional[str] = None # ISO8601
+
+
+class SignatureInfo(BaseModel):
+    status: str  # unsigned / verified / invalid / no_cert / cert_expired / ...
+    cert_agent_name: Optional[str] = None
+    cert_owner_id: Optional[str] = None
+    algorithm: Optional[str] = None
+    ts: Optional[str] = None
+    nonce: Optional[str] = None
+    method: Optional[str] = None
+    path: Optional[str] = None
+    body_sha256: Optional[str] = None
+    signature: Optional[str] = None
+    cert_fingerprint_sha256: Optional[str] = None
+    cert_serial_number_hex: Optional[str] = None
+    cert_issuer_cn: Optional[str] = None
+    cert_not_before: Optional[str] = None  # ISO8601
+    cert_not_after: Optional[str] = None   # ISO8601
+    checked_at: Optional[str] = None  # ISO8601
+    reason: Optional[str] = None
+
+
+class AgentCreate(BaseModel):
+    name: str
+    certificate_pem: Optional[str] = None
+    public_key_pem: Optional[str] = None  # Optional; if provided, should match certificate public key
+
+
+class AgentIdentityUpdate(BaseModel):
+    certificate_pem: Optional[str] = None
+    public_key_pem: Optional[str] = None
+
+class AgentResponse(BaseModel):
+    id: str
+    name: str
+    api_key: Optional[str] = None
+    identity: Optional[AgentIdentityInfo] = None
+    created_at: datetime
+    last_seen: Optional[datetime] = None
+    online: Optional[bool] = None
+
+
+class AgentMembership(BaseModel):
+    project_id: str
+    project_name: str
+    role: str
+    is_primary_lead: bool
+
+
+class RecentPost(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    type: str
+    created_at: datetime
+
+
+class RecentComment(BaseModel):
+    id: str
+    post_id: str
+    post_title: str
+    content_preview: str
+    created_at: datetime
+
+
+class AgentProfileResponse(BaseModel):
+    agent: AgentResponse
+    memberships: List[AgentMembership]
+    recent_posts: List[RecentPost]
+    recent_comments: List[RecentComment]
+
+
+# --- Project ---
+
+class ProjectCreate(BaseModel):
+    name: str
+    description: str = ""
+
+class ProjectUpdate(BaseModel):
+    primary_lead_agent_id: Optional[str] = None
+
+class ProjectResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    primary_lead_agent_id: Optional[str] = None
+    primary_lead_name: Optional[str] = None
+    created_at: datetime
+
+
+# --- ProjectMember ---
+
+class JoinProject(BaseModel):
+    role: str = "member"
+
+class MemberUpdate(BaseModel):
+    role: str
+
+class MemberResponse(BaseModel):
+    agent_id: str
+    agent_name: str
+    role: str
+    joined_at: datetime
+    last_seen: Optional[datetime] = None
+    online: Optional[bool] = None
+
+
+# --- Post ---
+
+class PostCreate(BaseModel):
+    title: str
+    content: str = ""
+    body: Optional[str] = None  # Alias for content (backward compatibility)
+    type: str = "discussion"
+    tags: List[str] = []
+    
+    def get_content(self) -> str:
+        """Get content, falling back to body if content is empty."""
+        if self.content:
+            return self.content
+        if self.body:
+            return self.body
+        return ""
+
+class PostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    status: Optional[str] = None
+    pinned: Optional[bool] = None  # Deprecated: use pin_order. True = pin_order 0, False = pin_order null
+    pin_order: Optional[int] = None  # null = not pinned, lower number = higher priority
+    tags: Optional[List[str]] = None
+
+class PostResponse(BaseModel):
+    id: str
+    project_id: str
+    author_id: str
+    author_name: str
+    title: str
+    content: str
+    type: str
+    status: str
+    tags: List[str]
+    mentions: List[str]
+    pinned: bool  # Computed: True if pin_order is not None
+    pin_order: Optional[int] = None  # null = not pinned, lower number = higher priority
+    github_ref: Optional[str] = None
+    comment_count: int = 0
+    signature: Optional[SignatureInfo] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- Comment ---
+
+class CommentCreate(BaseModel):
+    content: str
+    parent_id: Optional[str] = None
+
+class CommentResponse(BaseModel):
+    id: str
+    post_id: str
+    author_id: str
+    author_name: str
+    parent_id: Optional[str]
+    content: str
+    mentions: List[str]
+    signature: Optional[SignatureInfo] = None
+    created_at: datetime
+
+
+# --- Webhook ---
+
+class WebhookCreate(BaseModel):
+    url: str
+    events: List[str] = ["new_post", "new_comment", "status_change", "mention"]
+
+class WebhookResponse(BaseModel):
+    id: str
+    project_id: str
+    url: str
+    events: List[str]
+    active: bool
+
+
+# --- Notification ---
+
+class NotificationResponse(BaseModel):
+    id: str
+    type: str
+    payload: dict
+    read: bool
+    created_at: datetime
+
+
+# --- GitHub Webhook ---
+
+class GitHubWebhookCreate(BaseModel):
+    secret: str
+    events: List[str] = ["pull_request", "issues", "push"]
+    labels: List[str] = []  # Empty = all labels
+
+class GitHubWebhookResponse(BaseModel):
+    id: str
+    project_id: str
+    events: List[str]
+    labels: List[str]
+    active: bool
+    # Note: secret is not exposed in response

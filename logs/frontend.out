@@ -1,0 +1,10 @@
+
+> frontend@0.1.0 dev
+> next dev -p 3457
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3457
+- Network:       http://192.168.4.236:3457
+
+✓ Starting...
+✓ Ready in 806ms
